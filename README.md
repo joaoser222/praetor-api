@@ -24,7 +24,7 @@ A complete and modular boilerplate for FastAPI, inspired by Django architecture,
 
 ### 1. Prerequisites
 - Python 3.9+
-- Poetry (optional, but recommended) or pip
+- pip
 
 ### 2. Installation
 
@@ -66,21 +66,95 @@ python manage.py auth:createsuperuser
 ### 5. Run the Server
 
 ```bash
-python manage.py runserver --reload
+python manage.py run:server --reload
 ```
-
-Access the API documentation at http://127.0.0.1:8000/docs.
 
 ## ⚙️ CLI Commands
 
 The project includes a powerful CLI (`manage.py`) to manage the project. Main commands:
 
-- **Apps**: `make:app`, `make:entity`, `make:command`
-- **Database**: `db:create`, `db:migrate`, `db:makemigrations`, `db:rollback`, etc.
-- **Authentication**: `auth:createsuperuser`, `auth:makepermissions`
-- **Development**: `runserver`, `test`, `shell`
 
-> 💡 **Tip**: For the complete and detailed list of all commands, check the [full commands documentation](docs/COMMANDS.md).
+This project comes with a powerful command-line interface (CLI), `manage.py`, built with the Click library. It provides a set of commands to assist with development, database management, and other routine tasks.
+
+Here's a list of all available commands and their functions. To see all options for a command, you can use `python manage.py <command> --help`.
+
+### Development
+
+**`python manage.py run:server`**
+Starts the Uvicorn development server.
+- `--host`: The host address to use (default: `127.0.0.1`).
+- `--port`: The port to use (default: `8000`).
+- `--reload`: Enables automatic reload when files are changed.
+
+**`python manage.py test [app_name]`**
+Runs tests with `pytest`.
+- `app_name` (optional): If provided, runs only tests inside the `apps/<app_name>/tests` folder. Otherwise, runs all tests.
+
+**`python manage.py shell`**
+Opens an interactive Python shell with the application context loaded.
+- If `IPython` is installed, it will be used automatically (better experience).
+- Otherwise, uses the standard Python shell.
+- Useful for testing code, debugging, and exploring the application interactively.
+
+### Code Generation (`make`)
+
+**`python manage.py make:app <name>`**
+Creates a new modular app inside the `apps/` directory.
+- `<name>`: The name of the new app (e.g., `products`).
+
+**`python manage.py make:entity <name> --app <app>`**
+Creates a new complete entity (model, schema, repository, service, router, permission, test) inside an existing app.
+- `<name>`: The name of the entity (e.g., `post`).
+- `--app <app>`: The name of the app where the entity will be created (required).
+
+Example:
+```bash
+python manage.py make:entity post --app posts
+```
+
+This will create all necessary files for the entity using Jinja2 templates located in `core/templates/entity/`.
+
+**`python manage.py make:command <name>`**
+Creates a new custom command file in the `core/commands/` directory.
+- `<name>`: The name of the new command (e.g., `reports`).
+
+### Database (`db:`)
+
+**`python manage.py db:create`**
+Creates all tables in the database based on your SQLAlchemy models (if supported by the driver).
+
+**`python manage.py db:drop`**
+Drops all tables from the database. Asks for confirmation.
+
+**`python manage.py db:makemigrations -m "<message>"`**
+Creates a new Alembic migration file based on detected changes in your models.
+- `-m "<message>"`: A descriptive message for the migration.
+
+**`python manage.py db:migrate`**
+Applies all pending migrations to the database.
+
+**`python manage.py db:rollback --steps <n>`**
+Reverts a specific number of migrations.
+- `--steps <n>`: The number of migrations to revert (default: 1).
+
+**`python manage.py db:reset`**
+Completely resets the database (drop all + migrate). Asks for confirmation.
+
+**`python manage.py db:current`**
+Shows the current migration revision.
+
+**`python manage.py db:history`**
+Displays the migration history.
+
+### Authentication and Users (`auth:`)
+
+**`python manage.py auth:createsuperuser`**
+Creates a new superuser interactively, asking for email, username, name, and password.
+
+**`python manage.py auth:makepermissions`**
+Discovers and synchronizes permissions defined in each app's `permissions/*.py` files with the database.
+
+---
 
 ## 📁 Project Structure
 
@@ -101,65 +175,34 @@ praetor-api/
 │   ├── base_model.py            # Base SQLAlchemy + TimestampMixin
 │   ├── base_repository.py       # Generic Repository Pattern
 │   ├── base_service.py          # Base Service Layer
+
 │   ├── exceptions.py            # Custom HTTP exceptions
 │   ├── dependencies.py          # Global dependencies
 │   ├── celery_app.py            # Celery instance and configuration
 │   ├── middlewares/             # Custom middlewares
 │   ├── utils.py                 # Auto-discovery of routes/commands
 │   ├── cli.py                   # Main CLI
-│   ├── commands/                # CLI commands
-│   │   ├── auth.py              # Authentication commands
-│   │   ├── db.py                # Database commands
-│   │   ├── make.py              # Code generation commands
-│   │   └── shell.py             # Interactive shell
+│   ├── commands/                # CLI Core commands
 │   └── templates/               # Jinja2 templates for code generation
-│       ├── command.py.j2
-│       └── entity/
-│           ├── model.py.j2
-│           ├── schema.py.j2
-│           ├── repository.py.j2
-│           ├── service.py.j2
-│           ├── router.py.j2
-│           ├── permission.py.j2
-│           └── test.py.j2
 │
 ├── apps/                        # Modular apps (Domain-Driven)
-│   └── auth/                    # Authentication app (project's basic structure)
+│   └── {app_name}/              # App directory
 │       ├── models/              # SQLAlchemy models
-│       │   ├── user.py
-│       │   ├── role.py
-│       │   ├── permission.py
-│       │   └── token.py
 │       ├── schemas/             # Pydantic schemas
-│       │   └── user.py
 │       ├── repositories/        # Data access layer
-│       │   ├── user.py
-│       │   └── token.py
 │       ├── services/            # Business logic
-│       │   └── user.py
 │       ├── routers/             # HTTP endpoints
-│       │   └── auth.py
 │       ├── permissions/         # Permission definitions
-│       │   └── user.py
+|       ├── tests/               # App tests
 │       ├── tasks.py             # Asynchronous tasks (Celery)
-│       ├── dependencies.py      # App-specific dependencies
-│       └── tests/               # App tests
-│           └── user.py
+│       ├── app.py               # Base class app
+│       └── dependencies.py      # App-specific dependencies
+│       
 │
 ├── migrations/                  # Alembic migrations
-│   ├── env.py
-│   ├── script.py.mako
-│   └── versions/                # Migration files
 │
-├── tests/                       # Global tests
-│   ├── conftest.py              # pytest fixtures
-│   └── __init__.py
-│
-└── docs/                        # Additional documentation
-    ├── APPS.md                  # Apps documentation
-    ├── COMMANDS.md              # CLI commands documentation
-    ├── MIDDLEWARES.md           # Middlewares documentation
-    └── WORKERS.md               # Celery/Workers documentation
+└── tests/                       # Global tests
+
 ```
 
 ## 🏛️ Architecture
