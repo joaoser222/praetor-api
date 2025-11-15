@@ -2,7 +2,7 @@
 
 A complete and modular boilerplate for FastAPI, inspired by Django architecture, focused on scalability and maintainability.
 
-## ✨ Features
+## Features
 
 - **Modular Structure**: Organizes the project into independent "apps", just like Django.
 - **Powerful CLI**: A `manage.py` with `click` to manage the project (create apps, migrations, users, etc.).
@@ -20,7 +20,7 @@ A complete and modular boilerplate for FastAPI, inspired by Django architecture,
 - **Custom Exceptions**: Custom HTTP exception system for consistent error handling.
 - **Integrated Logging**: Configured logging system with middleware for request tracking.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prerequisites
 - Python 3.9+
@@ -70,7 +70,7 @@ python manage.py run:server --reload
 ```
 
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 praetor-api/
@@ -94,7 +94,7 @@ praetor-api/
 
 ```
 
-## 🏛️ Architecture
+## Architecture
 
 The project is organized into **apps**, which are independent Python modules located inside the `apps/` directory. Each app is responsible for a specific functionality within the application domain (e.g., `gateway`, `billing`).
 
@@ -297,14 +297,13 @@ Discovers and synchronizes permissions defined in each app's `permissions/*.py` 
 
 ---
 
-
 ## Celery Workers
 
 Workers are processes that run continuously, waiting for "tasks" to execute. When your application needs to perform a long operation (such as sending an email, processing a video, generating a complex report), it doesn't execute the task directly. Instead, it sends a message to a queue. The worker picks up this message from the queue and executes the corresponding task in the background.
 
 This allows the API to respond immediately to the user, improving experience and scalability.
 
-## 1. Configuration
+### Configuration
 
 Celery configuration is done through environment variables in your `.env` file.
 
@@ -328,7 +327,7 @@ CELERY_RESULT_BACKEND="db+sqlite:///celery_results.db"
 -   **`CELERY_BROKER_URL`**: The URL of the message broker system. This is a requirement for Celery to work. Redis is the default and recommended option for development.
 -   **`CELERY_RESULT_BACKEND`**: The URL of the backend that stores the state and results of tasks. The example uses a SQLite database (`celery_results.db` will be created in the project root) to simplify the development environment.
 
-## 2. Running the Worker
+### Running the Worker
 
 To start a worker that will listen for new tasks, run the following command from your project root:
 
@@ -342,7 +341,7 @@ celery -A core.celery_app worker --loglevel=info
 
 You'll see output in the terminal indicating that the worker is ready to receive tasks.
 
-## 3. Creating a New Task
+### Creating a New Task
 
 Thanks to the auto-discovery system and code generators, creating and registering a new task is very simple.
 
@@ -371,7 +370,7 @@ def send_email_task(recipient: str, subject: str, message: str):
 
 The Celery worker will find this task automatically the next time it's started.
 
-## 4. Calling a Task in the Application
+### Calling a Task in the Application
 
 To execute a background task from your API endpoint, import the task function and call it with the `.delay()` method.
 
