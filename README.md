@@ -22,11 +22,11 @@ A complete and modular boilerplate for FastAPI, inspired by Django architecture,
 
 ## Quick Start
 
-### 1. Prerequisites
+### Prerequisites
 - Python 3.9+
 - pip
 
-### 2. Installation
+### Installation
 
 ```bash
 # Clone the repository
@@ -47,7 +47,7 @@ cp .env.example .env
 
 Edit the `.env` file with your database settings and security keys.
 
-### 3. Database Setup
+### Database Setup
 
 ```bash
 # Create the database (if it doesn't exist yet)
@@ -57,18 +57,27 @@ Edit the `.env` file with your database settings and security keys.
 python manage.py db:migrate
 ```
 
-### 4. Create a Superuser
+### Create a Superuser
 
 ```bash
 python manage.py auth:createsuperuser
 ```
 
-### 5. Run the Server
+### Run the Server
 
 ```bash
 python manage.py run:server --reload
 ```
 
+
+## Architecture
+
+The project is organized into **apps**, which are independent Python modules located inside the `apps/` directory. Each app is responsible for a specific functionality within the application domain (e.g., `gateway`, `billing`).
+
+This approach offers several benefits:
+- **Organization:** Code related to a functionality is grouped in a single location.
+- **Reusability:** Well-defined apps can be more easily reused in other projects.
+- **Maintainability:** It's easier to understand, debug, and modify isolated functionality.
 
 ## Project Structure
 
@@ -93,15 +102,6 @@ praetor-api/
 └── tests/                       # Global tests
 
 ```
-
-## Architecture
-
-The project is organized into **apps**, which are independent Python modules located inside the `apps/` directory. Each app is responsible for a specific functionality within the application domain (e.g., `gateway`, `billing`).
-
-This approach offers several benefits:
-- **Organization:** Code related to a functionality is grouped in a single location.
-- **Reusability:** Well-defined apps can be more easily reused in other projects.
-- **Maintainability:** It's easier to understand, debug, and modify isolated functionality.
 
 ### Project's Core Apps
 
@@ -210,7 +210,7 @@ The project includes a complete permissions and roles system (RBAC - Role-Based 
 
 Permissions are automatically discovered and can be checked at endpoints through dependencies. Each app can define its own permissions in the `permissions/` directory, and they will be automatically synchronized with the database when the sync command is executed.
 
-## ⚙️ CLI Commands
+## CLI Commands
 
 The project includes a powerful CLI (`manage.py`) to manage the project. Main commands:
 
