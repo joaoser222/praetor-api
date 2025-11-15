@@ -212,9 +212,6 @@ Permissions are automatically discovered and can be checked at endpoints through
 
 ## CLI Commands
 
-The project includes a powerful CLI (`manage.py`) to manage the project. Main commands:
-
-
 This project comes with a powerful command-line interface (CLI), `manage.py`, built with the Click library. It provides a set of commands to assist with development, database management, and other routine tasks.
 
 Here's a list of all available commands and their functions. To see all options for a command, you can use `python manage.py <command> --help`.
@@ -259,7 +256,7 @@ This will create all necessary files for the entity using Jinja2 templates locat
 Creates a new custom command file in the `core/commands/` directory.
 - `<name>`: The name of the new command (e.g., `reports`).
 
-### Database (`db:`)
+### Database (`db`)
 
 **`python manage.py db:create`**
 Creates all tables in the database based on your SQLAlchemy models (if supported by the driver).
@@ -287,7 +284,7 @@ Shows the current migration revision.
 **`python manage.py db:history`**
 Displays the migration history.
 
-### Authentication and Users (`auth:`)
+### Authentication and Users (`auth`)
 
 **`python manage.py auth:createsuperuser`**
 Creates a new superuser interactively, asking for email, username, name, and password.
