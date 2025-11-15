@@ -1,0 +1,11 @@
+import time
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
+
+
+class {{ name|capitalize }}Middleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        # Middleware content
+        response = await call_next(request)
+        return response

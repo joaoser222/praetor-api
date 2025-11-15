@@ -1,0 +1,10 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.base_service import BaseService
+from ..repositories.{{ name }} import {{ repo_name }}
+
+
+class {{ service_name }}(BaseService):
+    def __init__(self, db: AsyncSession):
+        super().__init__(db)
+        self.repo = {{ repo_name }}(db)

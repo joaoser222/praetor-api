@@ -1,0 +1,25 @@
+"""
+Dependency Injection for the 'billing' app.
+
+This module contains functions that can be used as FastAPI dependencies
+to provide services, repositories, or other resources to the API endpoints.
+
+By defining dependencies here, you can centralize the logic for obtaining
+and configuring resources, making your endpoints cleaner and more testable.
+
+Example:
+    from fastapi import Depends, APIRouter
+    from .services.some_service import SomeService
+
+    router = APIRouter()
+
+    def get_some_service() -> SomeService:
+        # This could involve getting a DB session, etc.
+        return SomeService()
+
+    @router.get("/")
+    def list_items(service: SomeService = Depends(get_some_service)):
+        return service.get_all()
+"""
+
+# Add your app-specific dependency functions here.

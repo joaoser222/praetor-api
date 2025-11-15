@@ -1,0 +1,19 @@
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+
+
+class {{ schema_name }}Base(BaseModel):
+    pass
+
+
+class {{ schema_name }}Create({{ schema_name }}Base):
+    pass
+
+
+class {{ schema_name }}Update(BaseModel):
+    pass
+
+
+class {{ schema_name }}Response({{ schema_name }}Base):
+    id: int
+    model_config = ConfigDict(from_attributes=True)

@@ -1,0 +1,25 @@
+from datetime import datetime, timezone
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from core.base_model import Base, TimestampMixin
+
+
+class Token(Base, TimestampMixin, AsyncAttrs):
+    """
+    Model for storing refresh tokens in the database.
+    
+    In the hybrid model, only refresh tokens are stored in the database.
+    Access tokens are JWT (stateless) and don't need to be stored.
+    """
+    __tablename__ = "tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String(255), unique=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    
+    # Relationship with user
+    user = relationship("User", backref="tokens", lazy="selectin")
+
