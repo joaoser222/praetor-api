@@ -17,7 +17,7 @@ def make_cli():
 
 @make_cli.command("make:app")
 @click.argument("name")
-def startapp(name: str):
+def make_app(name: str):
     """Creates a new app with a default structure."""
     app_dir = os.path.join(settings.BASE_DIR, "apps", name)
     env = _load_template_env()

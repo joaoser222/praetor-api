@@ -110,7 +110,7 @@ def auth_cli():
 
 
 @auth_cli.command("auth:createsuperuser")
-def create_superuser():
+def auth_createsuperuser():
     """Creates a superuser."""
     email = click.prompt("Email", type=str)
     username = click.prompt("Username", type=str)
@@ -129,6 +129,6 @@ def create_superuser():
     click.echo(f"Superuser {user.email} created successfully.")
 
 @auth_cli.command("auth:makepermissions")
-def sync_permissions_command():
-    """Synchronizes permissions defined in the code with the database."""
+def auth_makepermissions():
+    """Generate permissions defined in the code with the database."""
     asyncio.run(_sync_permissions())

@@ -23,7 +23,7 @@ async def _create_all():
 
 
 @db_cli.command("db:create")
-def create():
+def db_create():
     """Creates all database tables."""
     click.echo("Creating database tables...")
     asyncio.run(_create_all())
@@ -36,7 +36,7 @@ async def _drop_all():
 
 
 @db_cli.command("db:drop")
-def drop():
+def db_drop():
     """Drops all database tables."""
     if click.confirm("Are you sure you want to drop all tables?"):
         click.echo("Dropping database tables...")
@@ -46,14 +46,14 @@ def drop():
 
 @db_cli.command("db:makemigrations")
 @click.option("-m", "--message", required=True, help="Revision message")
-def makemigrations(message: str):
+def db_makemigrations(message: str):
     """Creates a new revision file (makemigrations)."""
     click.echo(f"Creating new migration: {message}")
     command.revision(alembic_cfg, message=message, autogenerate=True)
 
 
 @db_cli.command("db:migrate")
-def migrate():
+def db_migrate():
     """Applies all pending migrations."""
     click.echo("Applying migrations...")
     command.upgrade(alembic_cfg, "head")
@@ -62,7 +62,7 @@ def migrate():
 
 @db_cli.command("db:rollback")
 @click.option("--steps", default=1, help="Number of migrations to rollback.")
-def rollback(steps: int):
+def db_rollback(steps: int):
     """Rolls back migrations."""
     click.echo(f"Rolling back {steps} migration(s)...")
     command.downgrade(alembic_cfg, f"-{steps}")
@@ -70,7 +70,7 @@ def rollback(steps: int):
 
 
 @db_cli.command("db:reset")
-def reset():
+def db_reset():
     """Resets the database (drops all tables and applies migrations)."""
     if click.confirm(
         "This will delete all data. Are you sure you want to reset the database?"
@@ -82,12 +82,12 @@ def reset():
 
 
 @db_cli.command("db:current")
-def current():
+def db_current():
     """Shows the current migration revision."""
     command.current(alembic_cfg)
 
 
 @db_cli.command("db:history")
-def history():
+def db_history():
     """Shows the migration history."""
     command.history(alembic_cfg)
