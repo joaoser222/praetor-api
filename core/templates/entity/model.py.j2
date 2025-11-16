@@ -5,5 +5,3 @@ class {{ class_name }}(Base, TimestampMixin):
     __tablename__ = '{{ table_name }}'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), nullable=False)
-    description = Column(String(255), nullable=True)
