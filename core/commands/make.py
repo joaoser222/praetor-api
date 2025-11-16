@@ -10,6 +10,10 @@ def _load_template_env():
     template_path = os.path.join(settings.BASE_DIR, "core", "templates")
     return Environment(loader=FileSystemLoader(template_path))
 
+def _to_pascal_case(name: str) -> str:
+    """Convert snake_case or kebab-case to PascalCase"""
+    return ''.join(word.capitalize() for word in name.replace('-', '_').split('_'))
+
 @click.group('make')
 def make_cli():
     """A group of commands to generate boilerplate code."""
@@ -81,13 +85,16 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool):
     if minimal:
         only = "model,schema"
 
+    # Convert name to PascalCase for class names
+    pascal_name = _to_pascal_case(name)
+    
     context = {
         "name": name,
-        "class_name": name.capitalize(),
-        "model_name": name.capitalize(),
-        "schema_name": name.capitalize(),
-        "repo_name": f"{name.capitalize()}Repository",
-        "service_name": f"{name.capitalize()}Service",
+        "class_name": pascal_name,
+        "model_name": pascal_name,
+        "schema_name": pascal_name,
+        "repo_name": f"{pascal_name}Repository",
+        "service_name": f"{pascal_name}Service",
     }
 
     # All possible files to generate
@@ -213,6 +220,7 @@ def make_middleware(name: str):
     middleware_root = os.path.join(settings.BASE_DIR, "middlewares")
     middleware_path = os.path.join(middleware_root, f"{name}.py")
     env = _load_template_env()
+    pascal_name = _to_pascal_case(name)
 
     # Create commands directory if nos exists
     if not os.path.exists(middleware_root):
@@ -223,6 +231,6 @@ def make_middleware(name: str):
         click.echo(f"Middleware file 'middlewares/{name}.py' already exists.")
         return
 
-    create_from_template(env, "middleware.py.j2", middleware_path, {"name": name})
+    create_from_template(env, "middleware.py.j2", middleware_path, {"class_name": pascal_name})
 
     click.secho(f"Middleware file 'middlewares/{name}.py' created successfully.", fg="green")

@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import Response
 
 
-class {{ name|capitalize }}Middleware(BaseHTTPMiddleware):
+class {{ class_name }}Middleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         # Middleware content
         response = await call_next(request)
