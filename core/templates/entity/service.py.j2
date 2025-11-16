@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.base_service import BaseService
-from ..repositories.{{ name }} import {{ repo_name }}
+from ..repositories.{{ name }} import {{ class_name }}Repository
 
 
-class {{ service_name }}(BaseService):
+class {{ class_name }}Service(BaseService):
     def __init__(self, db: AsyncSession):
         super().__init__(db)
-        self.repo = {{ repo_name }}(db)
+        self.repo = {{ class_name }}Repository(db)

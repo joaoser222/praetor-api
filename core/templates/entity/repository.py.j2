@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.base_repository import BaseRepository
-from ..models.{{ name }} import {{ model_name }}
-from ..schemas.{{ name }} import {{ schema_name }}Create, {{ schema_name }}Update
+from ..models.{{ name }} import {{ class_name }}
+from ..schemas.{{ name }} import {{ class_name }}Create, {{ class_name }}Update
 
-class {{ repo_name }}(BaseRepository[{{ model_name }}, {{ schema_name }}Create, {{ schema_name }}Update]):
+class {{ class_name }}Repository(BaseRepository[{{ class_name }}, {{ class_name }}Create, {{ class_name }}Update]):
     def __init__(self, db: AsyncSession):
-        super().__init__({{ model_name }}, db)
+        super().__init__({{ class_name }}, db)

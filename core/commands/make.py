@@ -14,6 +14,50 @@ def _to_pascal_case(name: str) -> str:
     """Convert snake_case or kebab-case to PascalCase"""
     return ''.join(word.capitalize() for word in name.replace('-', '_').split('_'))
 
+
+def _to_plural(word: str) -> str:
+    """
+    Convert a word to its plural form following English pluralization rules.
+    """
+    # Special irregular plurals
+    irregular_plurals = {
+        'person': 'people',
+        'child': 'children',
+        'man': 'men',
+        'woman': 'women',
+        'tooth': 'teeth',
+        'foot': 'feet',
+        'mouse': 'mice',
+        'goose': 'geese',
+    }
+    
+    word_lower = word.lower()
+    
+    # Check for irregular plurals
+    if word_lower in irregular_plurals:
+        return irregular_plurals[word_lower]
+    
+    # Words ending in consonant + y -> ies
+    if len(word) > 1 and word[-1] == 'y' and word[-2] not in 'aeiou':
+        return word[:-1] + 'ies'
+    
+    # Words ending in s, ss, sh, ch, x, z -> es
+    if word.endswith(('s', 'ss', 'sh', 'ch', 'x', 'z')):
+        return word + 'es'
+    
+    # Words ending in consonant + o -> es
+    if len(word) > 1 and word[-1] == 'o' and word[-2] not in 'aeiou':
+        return word + 'es'
+    
+    # Words ending in f or fe -> ves
+    if word.endswith('fe'):
+        return word[:-2] + 'ves'
+    if word.endswith('f'):
+        return word[:-1] + 'ves'
+    
+    # Default: just add s
+    return word + 's'
+
 @click.group('make')
 def make_cli():
     """A group of commands to generate boilerplate code."""
@@ -25,6 +69,8 @@ def make_app(name: str):
     """Creates a new app with a default structure."""
     app_dir = os.path.join(settings.BASE_DIR, "apps", name)
     env = _load_template_env()
+    class_name = _to_pascal_case(name)
+
 
     if os.path.exists(app_dir):
         click.secho(f"App '{name}' already exists.", fg="yellow")
@@ -37,7 +83,7 @@ def make_app(name: str):
     open(os.path.join(app_dir, "__init__.py"), "w").close()
     
     # Create app.py file in app directory
-    create_from_template(env, 'app.py.j2', os.path.join(app_dir, "app.py"), {"name": name})
+    create_from_template(env, 'app.py.j2', os.path.join(app_dir, "app.py"), {"name": name, "class_name": class_name})
 
     # Create tasks.py file in app directory
     create_from_template(env, 'tasks.py.j2', os.path.join(app_dir, "tasks.py"), {"name": name})
@@ -62,9 +108,9 @@ def make_app(name: str):
 @click.option("--only", help="Generate only specific components (comma-separated: model,schema,repository,service,router,permission,test)")
 @click.option("--except", "except_", help="Generate all components except these (comma-separated)")
 @click.option("--minimal", is_flag=True, help="Generate only model and schema (shortcut for --only model,schema)")
-def make_entity(name: str, app: str, only: str, except_: str, minimal: bool):
-    """Creates a new entity (model, schema, repo, service) inside an app.
-    """
+@click.option("--plural-name", "custom_plural_name" ,help="Override the default plural name (plural of entity name)")
+def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, custom_plural_name: str):
+    """Creates a new entity (model, schema, repo, service) inside an app."""
     app_dir = os.path.join(settings.BASE_DIR, "apps", app)
     env = _load_template_env()
 
@@ -88,19 +134,28 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool):
     # Convert name to PascalCase for class names
     pascal_name = _to_pascal_case(name)
     
+    if custom_plural_name:
+        plural_name = custom_plural_name
+    else:
+        # Generate plural form automatically
+        # Handle compound names like "order_item" -> "order_items"
+        name_parts = name.split('_')
+        # Pluralize only the last part
+        name_parts[-1] = _to_plural(name_parts[-1])
+        plural_name = '_'.join(name_parts)
+    
     context = {
-        "name": name,
+        "name": name,                                    
         "class_name": pascal_name,
-        "model_name": pascal_name,
-        "schema_name": pascal_name,
         "repo_name": f"{pascal_name}Repository",
         "service_name": f"{pascal_name}Service",
+        "plural_name": plural_name,
     }
 
     # All possible files to generate
     all_template_files = {
-        "model": ("entity/model.py.j2", f"models/{name}.py", "models", context["model_name"]),
-        "schema": ("entity/schema.py.j2", f"schemas/{name}.py", "schemas", context["schema_name"]),
+        "model": ("entity/model.py.j2", f"models/{name}.py", "models", context["class_name"]),
+        "schema": ("entity/schema.py.j2", f"schemas/{name}.py", "schemas", context["class_name"]),
         "repository": ("entity/repository.py.j2", f"repositories/{name}.py", "repositories", context["repo_name"]),
         "service": ("entity/service.py.j2", f"services/{name}.py", "services", context["service_name"]),
         "router": ("entity/router.py.j2", f"routers/{name}.py", None, None),
@@ -181,7 +236,6 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool):
                 if import_line not in content:
                     with open(init_file, "a") as f:
                         f.write(import_line)
-
     # Summary output
     if generated_components:
         click.secho(f"\n✓ Entity '{name}' created in app '{app}'", fg="green", bold=True)

@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String
 from core.base_model import Base, TimestampMixin
 
-class {{ model_name }}(Base, TimestampMixin):
-    __tablename__ = '{{ name }}s'
+class {{ class_name }}(Base, TimestampMixin):
+    __tablename__ = '{{ plural_name }}'
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), nullable=False)

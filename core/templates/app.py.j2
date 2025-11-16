@@ -1,10 +1,10 @@
 from pathlib import Path
 from core.base_app_config import BaseAppConfig
 
-class {{ name|capitalize }}AppConfig(BaseAppConfig):
+class {{ class_name }}AppConfig(BaseAppConfig):
     """Configuration class for the '{{ name }}' app."""
     pass
 
 
 # This instance will be discovered and registered automatically.
-app_config = {{ name|capitalize }}AppConfig(app_path=Path(__file__).parent)
+app_config = {{ class_name }}AppConfig(app_path=Path(__file__).parent)

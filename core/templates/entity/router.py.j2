@@ -6,39 +6,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.database import get_db
 from core.exceptions import NotFoundException
 from ..schemas import {{ name }} as schema
-from ..services.{{ name }} import {{ service_name }}
+from ..services.{{ name }} import {{ class_name }}Service
 
 router = APIRouter(prefix="/{{ name }}")
 
 
-@router.post("/", response_model=schema.{{ schema_name }}Response, status_code=status.HTTP_201_CREATED)
-async def create_{{ name }}({{ name }}_in: schema.{{ schema_name }}Create, db: AsyncSession = Depends(get_db)):
-    repo = {{ service_name }}(db).repo
+@router.post("/", response_model=schema.{{ class_name }}Response, status_code=status.HTTP_201_CREATED)
+async def create_{{ name }}({{ name }}_in: schema.{{ class_name }}Create, db: AsyncSession = Depends(get_db)):
+    repo = {{ class_name }}Service(db).repo
     return await repo.create(obj_in={{ name }}_in)
 
 
-@router.get("/", response_model=List[schema.{{ schema_name }}Response])
+@router.get("/", response_model=List[schema.{{ class_name }}Response])
 async def get_all_{{ name }}(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    repo = {{ service_name }}(db).repo
+    repo = {{ class_name }}Service(db).repo
     return await repo.get_multi(skip=skip, limit=limit)
 
 
-@router.get("/{pk_type}", response_model=schema.{{ schema_name }}Response)
+@router.get("/{pk_type}", response_model=schema.{{ class_name }}Response)
 async def get_{{ name }}(id: int, db: AsyncSession = Depends(get_db)):
-    repo = {{ service_name }}(db).repo
+    repo = {{ class_name }}Service(db).repo
     db_obj = await repo.get(pk=id)
     if not db_obj:
         raise NotFoundException(detail="{{ class_name }} not found")
     return db_obj
 
 
-@router.put("/{pk_type}", response_model=schema.{{ schema_name }}Response)
-async def update_{{ name }}(id: int, {{ name }}_in: schema.{{ schema_name }}Update, db: AsyncSession = Depends(get_db)):
-    repo = {{ service_name }}(db).repo
+@router.put("/{pk_type}", response_model=schema.{{ class_name }}Response)
+async def update_{{ name }}(id: int, {{ name }}_in: schema.{{ class_name }}Update, db: AsyncSession = Depends(get_db)):
+    repo = {{ class_name }}Service(db).repo
     return await repo.update(pk=id, obj_in={{ name }}_in)
 
 
 @router.delete("/{pk_type}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_{{ name }}(id: int, db: AsyncSession = Depends(get_db)):
-    repo = {{ service_name }}(db).repo
+    repo = {{ class_name }}Service(db).repo
     await repo.delete(pk=id)

@@ -2,18 +2,18 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 
-class {{ schema_name }}Base(BaseModel):
+class {{ class_name }}Base(BaseModel):
     pass
 
 
-class {{ schema_name }}Create({{ schema_name }}Base):
+class {{ class_name }}Create({{ class_name }}Base):
     pass
 
 
-class {{ schema_name }}Update(BaseModel):
+class {{ class_name }}Update(BaseModel):
     pass
 
 
-class {{ schema_name }}Response({{ schema_name }}Base):
+class {{ class_name }}Response({{ class_name }}Base):
     id: int
     model_config = ConfigDict(from_attributes=True)
