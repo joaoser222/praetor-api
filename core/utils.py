@@ -86,6 +86,54 @@ def create_from_template(template_env, template_name, target_path, context):
     with open(target_path, "w") as f:
         f.write(rendered_content)
 
+def to_pascal_case(name: str) -> str:
+    """Convert snake_case or kebab-case to PascalCase"""
+    return ''.join(word.capitalize() for word in name.replace('-', '_').split('_'))
+
+
+def to_plural(word: str) -> str:
+    """
+    Convert a word to its plural form following English pluralization rules.
+    """
+    # Special irregular plurals
+    irregular_plurals = {
+        'person': 'people',
+        'child': 'children',
+        'man': 'men',
+        'woman': 'women',
+        'tooth': 'teeth',
+        'foot': 'feet',
+        'mouse': 'mice',
+        'goose': 'geese',
+    }
+    
+    word_lower = word.lower()
+    
+    # Check for irregular plurals
+    if word_lower in irregular_plurals:
+        return irregular_plurals[word_lower]
+    
+    # Words ending in consonant + y -> ies
+    if len(word) > 1 and word[-1] == 'y' and word[-2] not in 'aeiou':
+        return word[:-1] + 'ies'
+    
+    # Words ending in s, ss, sh, ch, x, z -> es
+    if word.endswith(('s', 'ss', 'sh', 'ch', 'x', 'z')):
+        return word + 'es'
+    
+    # Words ending in consonant + o -> es
+    if len(word) > 1 and word[-1] == 'o' and word[-2] not in 'aeiou':
+        return word + 'es'
+    
+    # Words ending in f or fe -> ves
+    if word.endswith('fe'):
+        return word[:-2] + 'ves'
+    if word.endswith('f'):
+        return word[:-1] + 'ves'
+    
+    # Default: just add s
+    return word + 's'
+
 class PermissionDef(NamedTuple):
     name: str
     description: str

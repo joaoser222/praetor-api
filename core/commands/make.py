@@ -1,62 +1,13 @@
 import click
 import os
 from jinja2 import Environment, FileSystemLoader
-from core.utils import create_from_template
+from core.utils import create_from_template,to_pascal_case,to_plural
 from config.settings import settings
-
 
 def _load_template_env():
     # Setup Jinja2 environment
     template_path = os.path.join(settings.BASE_DIR, "core", "templates")
     return Environment(loader=FileSystemLoader(template_path))
-
-def _to_pascal_case(name: str) -> str:
-    """Convert snake_case or kebab-case to PascalCase"""
-    return ''.join(word.capitalize() for word in name.replace('-', '_').split('_'))
-
-
-def _to_plural(word: str) -> str:
-    """
-    Convert a word to its plural form following English pluralization rules.
-    """
-    # Special irregular plurals
-    irregular_plurals = {
-        'person': 'people',
-        'child': 'children',
-        'man': 'men',
-        'woman': 'women',
-        'tooth': 'teeth',
-        'foot': 'feet',
-        'mouse': 'mice',
-        'goose': 'geese',
-    }
-    
-    word_lower = word.lower()
-    
-    # Check for irregular plurals
-    if word_lower in irregular_plurals:
-        return irregular_plurals[word_lower]
-    
-    # Words ending in consonant + y -> ies
-    if len(word) > 1 and word[-1] == 'y' and word[-2] not in 'aeiou':
-        return word[:-1] + 'ies'
-    
-    # Words ending in s, ss, sh, ch, x, z -> es
-    if word.endswith(('s', 'ss', 'sh', 'ch', 'x', 'z')):
-        return word + 'es'
-    
-    # Words ending in consonant + o -> es
-    if len(word) > 1 and word[-1] == 'o' and word[-2] not in 'aeiou':
-        return word + 'es'
-    
-    # Words ending in f or fe -> ves
-    if word.endswith('fe'):
-        return word[:-2] + 'ves'
-    if word.endswith('f'):
-        return word[:-1] + 'ves'
-    
-    # Default: just add s
-    return word + 's'
 
 @click.group('make')
 def make_cli():
@@ -69,7 +20,7 @@ def make_app(name: str):
     """Creates a new app with a default structure."""
     app_dir = os.path.join(settings.BASE_DIR, "apps", name)
     env = _load_template_env()
-    class_name = _to_pascal_case(name)
+    class_name = to_pascal_case(name)
 
 
     if os.path.exists(app_dir):
@@ -132,7 +83,7 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
         only = "model,schema"
 
     # Convert name to PascalCase for class names
-    pascal_name = _to_pascal_case(name)
+    pascal_name = to_pascal_case(name)
     
     if custom_plural_name:
         plural_name = custom_plural_name
@@ -141,7 +92,7 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
         # Handle compound names like "order_item" -> "order_items"
         name_parts = name.split('_')
         # Pluralize only the last part
-        name_parts[-1] = _to_plural(name_parts[-1])
+        name_parts[-1] = to_plural(name_parts[-1])
         plural_name = '_'.join(name_parts)
     
     context = {
@@ -274,7 +225,7 @@ def make_middleware(name: str):
     middleware_root = os.path.join(settings.BASE_DIR, "middlewares")
     middleware_path = os.path.join(middleware_root, f"{name}.py")
     env = _load_template_env()
-    pascal_name = _to_pascal_case(name)
+    pascal_name = to_pascal_case(name)
 
     # Create commands directory if nos exists
     if not os.path.exists(middleware_root):
