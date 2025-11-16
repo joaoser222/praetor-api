@@ -12,7 +12,7 @@ class Token(Base, TimestampMixin, AsyncAttrs):
     In the hybrid model, only refresh tokens are stored in the database.
     Access tokens are JWT (stateless) and don't need to be stored.
     """
-    __tablename__ = "tokens"
+    __tablename__ = "auth_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
     token = Column(String(255), unique=True, index=True, nullable=False)

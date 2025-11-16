@@ -11,7 +11,7 @@ user_roles = Table(
 )
 
 class User(Base, TimestampMixin, AsyncAttrs):
-    __tablename__ = "users"
+    __tablename__ = "auth_users"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(100), unique=True, index=True, nullable=False)
