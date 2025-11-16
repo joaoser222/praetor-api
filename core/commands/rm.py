@@ -152,7 +152,7 @@ def rm_entity(name: str, app: str, only: str, except_: str, force: bool):
     not_found = [k for k in files_to_remove.keys() if k not in removed_components]
     if not_found:
         click.secho(f"  Not found: {', '.join(not_found)}", fg="yellow")
-
+        
 @rm_cli.command("rm:command")
 @click.argument("name")
 @click.option("--force", is_flag=True, help="Skip confirmation prompt")

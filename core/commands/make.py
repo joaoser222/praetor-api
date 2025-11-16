@@ -104,9 +104,11 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
     }
 
     # All possible files to generate
+    # Format: (template_file, target_file, init_dir, import_class)
+    # init_dir and import_class are None when __init__.py shouldn't be updated
     all_template_files = {
         "model": ("entity/model.py.j2", f"models/{name}.py", "models", context["class_name"]),
-        "schema": ("entity/schema.py.j2", f"schemas/{name}.py", "schemas", context["class_name"]),
+        "schema": ("entity/schema.py.j2", f"schemas/{name}.py", None, None),  # schemas import the whole module
         "repository": ("entity/repository.py.j2", f"repositories/{name}.py", "repositories", context["repo_name"]),
         "service": ("entity/service.py.j2", f"services/{name}.py", "services", context["service_name"]),
         "router": ("entity/router.py.j2", f"routers/{name}.py", None, None),
@@ -195,7 +197,7 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
     skipped = [k for k in all_template_files.keys() if k not in generated_components]
     if skipped:
         click.secho(f"  Skipped: {', '.join(skipped)}", fg="yellow")
-
+        
 @make_cli.command("make:command")
 @click.argument("name")
 def make_command(name: str):
