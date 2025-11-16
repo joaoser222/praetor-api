@@ -55,14 +55,31 @@ def make_app(name: str):
 @make_cli.command("make:entity")
 @click.argument("name")
 @click.option("--app", required=True, help="The app where the entity will be created.")
-def make_entity(name: str, app: str):
-    """Creates a new entity (model, schema, repo, service) inside an app."""
+@click.option("--only", help="Generate only specific components (comma-separated: model,schema,repository,service,router,permission,test)")
+@click.option("--except", "except_", help="Generate all components except these (comma-separated)")
+@click.option("--minimal", is_flag=True, help="Generate only model and schema (shortcut for --only model,schema)")
+def make_entity(name: str, app: str, only: str, except_: str, minimal: bool):
+    """Creates a new entity (model, schema, repo, service) inside an app.
+    """
     app_dir = os.path.join(settings.BASE_DIR, "apps", app)
     env = _load_template_env()
 
     if not os.path.exists(app_dir):
         click.secho(f"App '{app}' not found. Please create it first with 'make:app {app}'.", fg="red")
         return
+
+    # Validate conflicting options
+    if only and except_:
+        click.secho("Cannot use --only and --except together. Choose one.", fg="red")
+        return
+    
+    if minimal and (only or except_):
+        click.secho("Cannot use --minimal with --only or --except.", fg="red")
+        return
+
+    # Handle minimal flag
+    if minimal:
+        only = "model,schema"
 
     context = {
         "name": name,
@@ -73,37 +90,99 @@ def make_entity(name: str, app: str):
         "service_name": f"{name.capitalize()}Service",
     }
 
-    # Files to generate for the entity
-    template_files = {
-        "entity/model.py.j2": f"models/{name}.py",
-        "entity/schema.py.j2": f"schemas/{name}.py",
-        "entity/repository.py.j2": f"repositories/{name}.py",
-        "entity/service.py.j2": f"services/{name}.py",
-        "entity/permission.py.j2": f"permissions/{name}.py",
-        "entity/router.py.j2": f"routers/{name}.py",
-        "entity/test.py.j2": f"tests/{name}.py",
+    # All possible files to generate
+    all_template_files = {
+        "model": ("entity/model.py.j2", f"models/{name}.py", "models", context["model_name"]),
+        "schema": ("entity/schema.py.j2", f"schemas/{name}.py", "schemas", context["schema_name"]),
+        "repository": ("entity/repository.py.j2", f"repositories/{name}.py", "repositories", context["repo_name"]),
+        "service": ("entity/service.py.j2", f"services/{name}.py", "services", context["service_name"]),
+        "router": ("entity/router.py.j2", f"routers/{name}.py", None, None),
+        "permission": ("entity/permission.py.j2", f"permissions/{name}.py", None, None),
+        "test": ("entity/test.py.j2", f"tests/{name}.py", None, None),
     }
 
-    init_files = {
-        "models":  context["model_name"],
-        "schemas": context["schema_name"],
-        "repositories": context["repo_name"],
-        "services": context["service_name"]
-    }
-
-    for template_file, target_file in template_files.items():
-        target_path = os.path.join(app_dir, target_file)
-        create_from_template(env, template_file, target_path, context)
+    # Determine which files to generate
+    if only:
+        components_to_generate = [c.strip() for c in only.split(",")]
+        # Validate components
+        invalid = [c for c in components_to_generate if c not in all_template_files]
+        if invalid:
+            click.secho(f"Invalid components: {', '.join(invalid)}", fg="red")
+            click.secho(f"Valid options: {', '.join(all_template_files.keys())}", fg="yellow")
+            return
+        
+        files_to_generate = {k: v for k, v in all_template_files.items() if k in components_to_generate}
     
-    # Update importation of modules
-    for init_directory, importation_class in init_files.items():
-        target_dir = os.path.join(app_dir, init_directory)
-        init_file = os.path.join(target_dir, "__init__.py")
-        import_line = f"from .{name} import {importation_class}\n"
-        with open(init_file, "a") as f:
-            f.write(import_line)
+    elif except_:
+        components_to_exclude = [c.strip() for c in except_.split(",")]
+        # Validate components
+        invalid = [c for c in components_to_exclude if c not in all_template_files]
+        if invalid:
+            click.secho(f"Invalid components to exclude: {', '.join(invalid)}", fg="red")
+            click.secho(f"Valid options: {', '.join(all_template_files.keys())}", fg="yellow")
+            return
+        
+        files_to_generate = {k: v for k, v in all_template_files.items() if k not in components_to_exclude}
+    
+    else:
+        # Generate all components (default behavior)
+        files_to_generate = all_template_files.copy()
 
-    click.secho(f"Entity '{name}' created successfully in app '{app}'.", fg="green")
+    # Component dependencies (optional warning)
+    dependencies = {
+        "repository": ["model"],
+        "service": ["repository"],
+        "router": ["service", "schema"],
+    }
+
+    # Check dependencies (warning only)
+    components_list = list(files_to_generate.keys())
+    for component in components_list:
+        if component in dependencies:
+            missing_deps = [dep for dep in dependencies[component] if dep not in components_list]
+            if missing_deps:
+                click.secho(
+                    f"⚠ Warning: '{component}' typically depends on {', '.join(missing_deps)} which will not be generated.",
+                    fg="yellow"
+                )
+
+    # Generate files
+    generated_components = []
+    for component, (template_file, target_file, init_dir, import_class) in files_to_generate.items():
+        target_path = os.path.join(app_dir, target_file)
+        
+        # Check if file already exists
+        if os.path.exists(target_path):
+            click.secho(f"⚠ File already exists: {target_file}", fg="yellow")
+            if not click.confirm(f"  Overwrite?", default=False):
+                click.secho(f"  Skipped: {component}", fg="yellow")
+                continue
+        
+        create_from_template(env, template_file, target_path, context)
+        generated_components.append(component)
+        
+        # Update __init__.py if applicable
+        if init_dir and import_class:
+            target_dir = os.path.join(app_dir, init_dir)
+            init_file = os.path.join(target_dir, "__init__.py")
+            import_line = f"from .{name} import {import_class}\n"
+            
+            # Check if import already exists
+            if os.path.exists(init_file):
+                with open(init_file, "r") as f:
+                    content = f.read()
+                if import_line not in content:
+                    with open(init_file, "a") as f:
+                        f.write(import_line)
+
+    # Summary output
+    if generated_components:
+        click.secho(f"\n✓ Entity '{name}' created in app '{app}'", fg="green", bold=True)
+        click.secho(f"  Generated: {', '.join(generated_components)}", fg="cyan")
+    
+    skipped = [k for k in all_template_files.keys() if k not in generated_components]
+    if skipped:
+        click.secho(f"  Skipped: {', '.join(skipped)}", fg="yellow")
 
 @make_cli.command("make:command")
 @click.argument("name")
