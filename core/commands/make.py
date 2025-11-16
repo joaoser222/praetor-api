@@ -59,8 +59,10 @@ def make_app(name: str):
 @click.option("--only", help="Generate only specific components (comma-separated: model,schema,repository,service,router,permission,test)")
 @click.option("--except", "except_", help="Generate all components except these (comma-separated)")
 @click.option("--minimal", is_flag=True, help="Generate only model and schema (shortcut for --only model,schema)")
-@click.option("--plural-name", "custom_plural_name" ,help="Override the default plural name (plural of entity name)")
-def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, custom_plural_name: str):
+@click.option("--table-name", "custom_table_name" ,help="Override the default table name")
+@click.option("--no-prefix" , is_flag=True,help="Disable prefix name of app in table name")
+
+def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, custom_table_name: str, no_prefix: bool):
     """Creates a new entity (model, schema, repo, service) inside an app."""
     app_dir = os.path.join(settings.BASE_DIR, "apps", app)
     env = _load_template_env()
@@ -85,22 +87,27 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
     # Convert name to PascalCase for class names
     pascal_name = to_pascal_case(name)
     
-    if custom_plural_name:
-        plural_name = custom_plural_name
+    if custom_table_name:
+        table_name = custom_table_name
     else:
         # Generate plural form automatically
         # Handle compound names like "order_item" -> "order_items"
         name_parts = name.split('_')
         # Pluralize only the last part
         name_parts[-1] = to_plural(name_parts[-1])
-        plural_name = '_'.join(name_parts)
+        table_name = '_'.join(name_parts)
     
+    if no_prefix:
+        full_table_name = table_name
+    else:
+        full_table_name = f"{app}_{table_name}"
+
     context = {
         "name": name,                                    
         "class_name": pascal_name,
         "repo_name": f"{pascal_name}Repository",
         "service_name": f"{pascal_name}Service",
-        "plural_name": plural_name,
+        "table_name": full_table_name
     }
 
     # All possible files to generate
