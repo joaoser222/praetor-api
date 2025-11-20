@@ -6,6 +6,7 @@ import click
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy import inspect
+from core.utils import to_pascal_case
 
 
 @click.group("generate")
@@ -41,7 +42,7 @@ def generate_schemas(entity: str, app: str):
     Create, Update, and Read schemas using Jinja2 templates.
     """
     entity_name_lower = entity.lower()
-    entity_name_pascal = entity.capitalize()
+    entity_name_pascal = to_pascal_case(entity)
     app_path = Path(f"apps/{app}")
 
     if not app_path.exists():
