@@ -34,13 +34,15 @@ def get_model_attributes(model_class):
     required=True,
     help="The name of the app where the entity model is located.",
 )
-def generate_schemas(entity: str, app: str):
+@click.option("--force", is_flag=True, help="Force overwrite of existing file without confirmation.")
+def generate_schemas(entity: str, app: str, force: bool):
     """
     Generates CRUD Pydantic schemas based on an entity model.
 
     This command inspects the columns of a SQLAlchemy model and generates
     Create, Update, and Read schemas using Jinja2 templates.
     """
+
     entity_name_lower = entity.lower()
     entity_name_pascal = to_pascal_case(entity)
     app_path = Path(f"apps/{app}")
@@ -106,8 +108,10 @@ def generate_schemas(entity: str, app: str):
     schema_output_path = app_path / "schemas" / f"{entity_name_lower}.py"
 
     # Check if file already exists and ask for confirmation
-    if schema_output_path.exists():
-        click.secho(f"Warning: The file's contents will be overwritten according to the model '{model_path}'.", fg="yellow")
+    if schema_output_path.exists() and not force:
+        click.secho(
+            f"Warning: The file's contents will be overwritten according to the model '{model_path}'.", fg="yellow"
+        )
         if not click.confirm("Do you want to overwrite it?"):
             click.echo("Generation skipped.")
             return
