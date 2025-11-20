@@ -107,7 +107,8 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
         "class_name": pascal_name,
         "repo_name": f"{pascal_name}Repository",
         "service_name": f"{pascal_name}Service",
-        "table_name": full_table_name
+        "table_name": full_table_name,
+        "attributes": {} # Add this for schema.py.j2 compatibility with generation command
     }
 
     # All possible files to generate

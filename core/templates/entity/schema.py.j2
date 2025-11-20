@@ -3,16 +3,25 @@ from typing import Optional
 
 
 class {{ class_name }}Base(BaseModel):
-    pass
-
+{%- if attributes %}
+{%- for name, type in attributes.items() if name not in ['id', 'created_at', 'updated_at'] %}
+    {{ name }}: {{ type }}
+{%- endfor %}
+{%- else %}
+    pass # Add fields here
+{%- endif %}
 
 class {{ class_name }}Create({{ class_name }}Base):
     pass
 
-
 class {{ class_name }}Update(BaseModel):
-    pass
-
+{%- if attributes %}
+{%- for name, type in attributes.items() if name not in ['id', 'created_at', 'updated_at'] %}
+    {{ name }}: {{ type }}
+{%- endfor %}
+{%- else %}
+    pass # Add fields here
+{%- endif %}
 
 class {{ class_name }}Response({{ class_name }}Base):
     id: int
