@@ -1,7 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from core.base_model import Base, TimestampMixin
+from core.base_model import BaseModel, Base
 
 user_roles = Table(
     'user_roles',
@@ -10,7 +9,7 @@ user_roles = Table(
     Column('role_id', Integer, ForeignKey('roles.id'), primary_key=True)
 )
 
-class User(Base, TimestampMixin, AsyncAttrs):
+class User(BaseModel):
     __tablename__ = "auth_users"
 
     id = Column(Integer, primary_key=True, index=True)

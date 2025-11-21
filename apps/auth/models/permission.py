@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from core.base_model import Base, TimestampMixin
+from core.base_model import BaseModel
 
-class Permission(Base, TimestampMixin):
+class Permission(BaseModel):
     __tablename__ = "auth_permissions"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), unique=True, nullable=False)
