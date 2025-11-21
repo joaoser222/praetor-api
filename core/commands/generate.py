@@ -16,14 +16,21 @@ def generate_cli():
 
 
 def get_model_attributes(model_class):
-    """Inspects a SQLAlchemy model and returns its column attributes."""
+    """Inspects a SQLAlchemy model and returns its column attributes with type hints."""
     attributes = {}
     mapper = inspect(model_class).mapper
     for prop in mapper.iterate_properties:
         if isinstance(prop, ColumnProperty):
             column = prop.columns[0]
             python_type = column.type.python_type
-            attributes[prop.key] = python_type.__name__
+            type_name = python_type.__name__
+
+            # Wrap nullable columns in Optional, except for the id.
+            # The template handles making fields optional for the Update schema.
+            if column.nullable and prop.key != 'id':
+                attributes[prop.key] = f"Optional[{type_name}]"
+            else:
+                attributes[prop.key] = type_name
     return attributes
 
 
@@ -110,7 +117,7 @@ def generate_schemas(entity: str, app: str, force: bool):
     # Check if file already exists and ask for confirmation
     if schema_output_path.exists() and not force:
         click.secho(
-            f"Warning: The file's contents will be overwritten according to the model '{model_path}'.", fg="yellow"
+            f"Warning: The file '{schema_output_path}' will be overwritten based on the model '{model_path}'.", fg="yellow"
         )
         if not click.confirm("Do you want to overwrite it?"):
             click.echo("Generation skipped.")

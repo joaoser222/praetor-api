@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List, Dict
+from datetime import datetime,date
 
 
 class {{ class_name }}Base(BaseModel):
@@ -17,11 +18,13 @@ class {{ class_name }}Create({{ class_name }}Base):
 class {{ class_name }}Update(BaseModel):
 {%- if attributes %}
 {%- for name, type in attributes.items() if name not in ['id', 'created_at', 'updated_at'] %}
-    {{ name }}: {{ type }}
+{%- set base_type = type.replace('Optional[', '').replace(']', '') %}
+    {{ name }}: Optional[{{ base_type }}] = None
 {%- endfor %}
 {%- else %}
     pass # Add fields here
 {%- endif %}
+    model_config = ConfigDict(from_attributes=True)
 
 class {{ class_name }}Response({{ class_name }}Base):
     id: int
