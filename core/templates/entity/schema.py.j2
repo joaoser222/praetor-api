@@ -1,6 +1,6 @@
+import typing
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Dict
-from datetime import datetime,date
+from datetime import datetime, date
 
 
 class {{ class_name }}Base(BaseModel):
@@ -18,8 +18,8 @@ class {{ class_name }}Create({{ class_name }}Base):
 class {{ class_name }}Update(BaseModel):
 {%- if attributes %}
 {%- for name, type in attributes.items() if name not in ['id', 'created_at', 'updated_at'] %}
-{%- set base_type = type.replace('Optional[', '').replace(']', '') %}
-    {{ name }}: Optional[{{ base_type }}] = None
+{%- set base_type = type.replace('Optional[', '').replace(']', '').replace('typing.', '') %}
+    {{ name }}: typing.Optional[{{ base_type }}] = None
 {%- endfor %}
 {%- else %}
     pass # Add fields here
@@ -28,4 +28,10 @@ class {{ class_name }}Update(BaseModel):
 
 class {{ class_name }}Response({{ class_name }}Base):
     id: int
+{%- if 'created_at' in attributes %}
+    created_at: datetime
+{%- endif %}
+{%- if 'updated_at' in attributes %}
+    updated_at: datetime
+{%- endif %}
     model_config = ConfigDict(from_attributes=True)
