@@ -18,12 +18,24 @@ def generate_cli():
 def get_model_attributes(model_class):
     """Inspects a SQLAlchemy model and returns its column attributes with type hints."""
     attributes = {}
+    dynamic_imports = {
+        "typing": ["Optional"]
+    }
     mapper = inspect(model_class).mapper
     for prop in mapper.iterate_properties:
         if isinstance(prop, ColumnProperty):
             column = prop.columns[0]
             python_type = column.type.python_type
             type_name = python_type.__name__
+            module_name = python_type.__module__
+
+            # Generate importation of modules of types dynamically
+            if(module_name != "builtins"):
+                if(not dynamic_imports.get(module_name)):
+                    dynamic_imports[module_name] = []
+            
+                if(type_name not in dynamic_imports[module_name]):
+                    dynamic_imports[module_name].append(type_name)
 
             # Wrap nullable columns in Optional, except for the id.
             # The template handles making fields optional for the Update schema.
@@ -31,7 +43,7 @@ def get_model_attributes(model_class):
                 attributes[prop.key] = f"Optional[{type_name}]"
             else:
                 attributes[prop.key] = type_name
-    return attributes
+    return attributes,dynamic_imports
 
 
 @generate_cli.command("generate:schemas")
@@ -75,7 +87,7 @@ def generate_schemas(entity: str, app: str, force: bool):
         model_class = getattr(module, entity_name_pascal)
 
         # Get model attributes
-        attributes = get_model_attributes(model_class)
+        attributes,dynamic_imports = get_model_attributes(model_class)
         click.echo(f"Found attributes: {list(attributes.keys())}")
 
         # Check if there are any attributes other than the base ones
@@ -96,7 +108,7 @@ def generate_schemas(entity: str, app: str, force: bool):
             fg="red",
         )
         return
-
+    
     # Setup Jinja2 environment
     template_dir = Path("core/templates/entity")
     env = Environment(loader=FileSystemLoader(template_dir))
@@ -106,6 +118,7 @@ def generate_schemas(entity: str, app: str, force: bool):
     context = {
         "class_name": entity_name_pascal,
         "attributes": attributes,
+        "dynamic_imports": dynamic_imports
     }
 
     # Render the template
