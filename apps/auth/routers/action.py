@@ -9,10 +9,10 @@ from .. import dependencies
 from ..schemas import user as schemas
 from ..services.user import UserService
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/action")
 
 @router.post(
-    "/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED
+    "/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED 
 )
 async def register_user(
     user_in: schemas.UserCreate, db: AsyncSession = Depends(get_db)
@@ -102,24 +102,3 @@ async def logout_all_sessions(
 async def read_users_me(current_user: schemas.UserResponse = Depends(dependencies.get_current_user)):
     """Get current logged-in user."""
     return current_user
-
-
-@router.get("/", response_model=List[schemas.UserResponse])
-async def list_users(
-    skip: int = 0,
-    limit: int = 100,
-    db: AsyncSession = Depends(get_db),
-    current_user: schemas.UserResponse = Depends(dependencies.get_current_active_superuser),
-):
-    """List all users (superuser only)."""
-    user_service = UserService(db)
-    return await user_service.repo.get_multi(skip=skip, limit=limit)
-
-@router.get("/{user_id}", response_model=schemas.UserResponse)
-async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    """Get a specific user by ID."""
-    user_service = UserService(db)
-    user = await user_service.repo.get(user_id)
-    if not user:
-        raise NotFoundException(detail=f"User with ID {user_id} not found.")
-    return user
