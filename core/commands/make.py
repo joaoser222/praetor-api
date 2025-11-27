@@ -84,31 +84,26 @@ def make_entity(name: str, app: str, only: str, except_: str, minimal: bool, cus
     if minimal:
         only = "model,schema"
 
-    # Convert name to PascalCase for class names
     pascal_name = to_pascal_case(name)
     
-    if custom_table_name:
-        table_name = custom_table_name
-    else:
-        # Generate plural form automatically
-        # Handle compound names like "order_item" -> "order_items"
-        name_parts = name.split('_')
-        # Pluralize only the last part
-        name_parts[-1] = to_plural(name_parts[-1])
-        table_name = '_'.join(name_parts)
+    # Process name to plural - more readable approach
+    name_parts = name.split('_')
+    name_parts[-1] = to_plural(name_parts[-1])
+    plural_name = '_'.join(name_parts)
     
-    if no_prefix:
-        full_table_name = table_name
-    else:
-        full_table_name = f"{app}_{table_name}"
-
+    # Table name logic with clear conditional flow
+    table_name = custom_table_name or plural_name
+    if not no_prefix:
+        table_name = f"{app}_{table_name}"
+    
     context = {
-        "name": name,                                    
-        "class_name": pascal_name,
+        "name": name,
+        "class_name": to_pascal_case(name),
         "repo_name": f"{pascal_name}Repository",
         "service_name": f"{pascal_name}Service",
-        "table_name": full_table_name,
-        "attributes": {} # Add this for schema.py.j2 compatibility with generation command
+        "table_name": table_name,
+        "plural_name": plural_name,
+        "attributes": {}  # Required for schema template compatibility
     }
 
     # All possible files to generate

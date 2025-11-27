@@ -7,7 +7,7 @@ from config.database import get_db
 from core.exceptions import NotFoundException
 from .. import dependencies
 from ..schemas import user as schemas
-from ..services.user import UserService
+from ..repositories.user import UserRepository
 
 router = APIRouter(
     prefix="/user",
@@ -22,7 +22,7 @@ async def get_all_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depe
 
     This endpoint is restricted to superusers and supports pagination.
     """
-    repo = UserService(db).repo
+    repo = UserRepository(db)
     return await repo.get_multi(skip=skip, limit=limit)
 
 
@@ -33,7 +33,7 @@ async def get_user(id: int, db: AsyncSession = Depends(get_db)):
 
     This endpoint is restricted to superusers.
     """
-    repo = UserService(db).repo
+    repo = UserRepository(db)
     db_obj = await repo.get(pk=id)
     if not db_obj:
         raise NotFoundException(detail="User not found")
@@ -47,7 +47,7 @@ async def update_user(id: int, user_in: schemas.UserUpdate, db: AsyncSession = D
 
     This endpoint is restricted to superusers.
     """
-    repo = UserService(db).repo
+    repo = UserRepository(db)
     return await repo.update(pk=id, obj_in=user_in)
 
 
@@ -58,5 +58,5 @@ async def delete_user(id: int, db: AsyncSession = Depends(get_db)):
 
     This endpoint is restricted to superusers.
     """
-    repo = UserService(db).repo
+    repo = UserRepository(db)
     await repo.delete(pk=id)
