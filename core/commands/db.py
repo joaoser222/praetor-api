@@ -4,7 +4,7 @@ from alembic.config import Config
 from alembic import command
 
 from config.database import engine, AsyncSessionFactory
-from core.base_model import Base
+from core.base_model import BaseModel
 from config.settings import settings
 
 alembic_cfg = Config("alembic.ini")
@@ -19,7 +19,7 @@ def db_cli():
 
 async def _create_all():
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(BaseModel.metadata.create_all)
 
 
 @db_cli.command("db:create")
@@ -32,7 +32,7 @@ def db_create():
 
 async def _drop_all():
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(BaseModel.metadata.drop_all)
 
 
 @db_cli.command("db:drop")

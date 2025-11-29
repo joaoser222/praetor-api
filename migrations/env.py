@@ -18,8 +18,8 @@ config = context.config
 fileConfig(config.config_file_name)
 
 # Importa seus modelos
-from core.base_model import Base  # Certifique-se que Base = declarative_base()
-target_metadata = Base.metadata
+from core.base_model import BaseModel  # Certifique-se que Base = declarative_base()
+target_metadata = BaseModel.metadata
 
 # Função que executa migrations de forma síncrona
 def do_run_migrations(connection: Connection):

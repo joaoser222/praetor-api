@@ -6,9 +6,6 @@ from sqlalchemy.orm import DeclarativeBase, declared_attr
 from sqlalchemy.sql import func
 
 
-class Base(DeclarativeBase):
-    pass
-
 
 class TimestampMixin:
     @declared_attr
@@ -20,7 +17,7 @@ class TimestampMixin:
         return Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
 
-class BaseModel(Base, TimestampMixin, AsyncAttrs):
+class BaseModel(DeclarativeBase, TimestampMixin, AsyncAttrs):
     """
     Base model for all database models.
     Includes timestamp mixin and async attributes support.
