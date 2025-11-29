@@ -1,13 +1,6 @@
-from sqlalchemy import Column, Integer, String, Table, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from core.base_model import BaseModel, Base
-
-role_permissions = Table(
-    'auth_role_permissions',
-    Base.metadata,
-    Column('role_id', Integer, ForeignKey('roles.id'), primary_key=True),
-    Column('permission_id', Integer, ForeignKey('permissions.id'), primary_key=True)
-)
+from core.base_model import BaseModel
 
 class Role(BaseModel):
     __tablename__ = "auth_roles"
@@ -15,4 +8,4 @@ class Role(BaseModel):
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(255))
 
-    permissions = relationship("Permission", secondary=role_permissions, backref="roles", lazy="selectin")
+    permissions = relationship("RolePermission", back_populates="role")

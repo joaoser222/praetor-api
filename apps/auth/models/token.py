@@ -15,9 +15,9 @@ class Token(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     token = Column(String(255), unique=True, index=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("auth_users.id"), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relationship with user
-    user = relationship("User", backref="tokens", lazy="selectin")
+    user = relationship("User", back_populates="tokens")

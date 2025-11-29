@@ -2,12 +2,6 @@ from sqlalchemy import Boolean, Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
 from core.base_model import BaseModel, Base
 
-user_roles = Table(
-    'user_roles',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True),
-    Column('role_id', Integer, ForeignKey('roles.id'), primary_key=True)
-)
 
 class User(BaseModel):
     __tablename__ = "auth_users"
@@ -20,5 +14,6 @@ class User(BaseModel):
     
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    role_id = Column(Integer, ForeignKey("auth_roles.id"), nullable=False)
 
-    roles = relationship("Role", secondary=user_roles, backref="users", lazy="selectin")
+    role = relationship("Role", back_populates="users")
