@@ -11,10 +11,25 @@ from apps.auth.models import Permission, Role
 from core.utils import PermissionDef
 from config.database import AsyncSessionFactory
 
+async def _check_user_exists(email: str) -> bool:
+    async with AsyncSessionFactory() as session:
+        user_service = UserService(session)
+        has_user = await user_service.repo.get_by_email(email)
+
+        if has_user:
+            click.echo(f"User with email {email} already exists!",color="red")
+            return True
+        
+        return False
 
 async def _create_user(user_data: UserCreate):
     async with AsyncSessionFactory() as session:
         user_service = UserService(session)
+        has_user = await user_service.repo.get_by_email(user_data.email)
+
+        if has_user:
+            click.echo(f"User with email {user_data.email} already exists!")
+
         user = await user_service.create_user(user_data)
         return user
 
@@ -113,6 +128,9 @@ def auth_cli():
 def auth_createsuperuser():
     """Creates a superuser."""
     email = click.prompt("Email", type=str)
+    if asyncio.run(_check_user_exists(email)):
+        return
+
     username = click.prompt("Username", type=str)
     full_name = click.prompt("Full Name", type=str)
     password = click.prompt("Password", hide_input=True, confirmation_prompt=True)
