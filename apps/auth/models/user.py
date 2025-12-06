@@ -14,7 +14,7 @@ class User(BaseModel):
     
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    role_id = Column(Integer, ForeignKey("auth_roles.id"), nullable=False)
+    role_id = Column(Integer, ForeignKey("auth_roles.id"), nullable=True)
 
     role = relationship("Role", back_populates="users")
     tokens = relationship("Token", back_populates="user")
