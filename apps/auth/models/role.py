@@ -9,3 +9,6 @@ class Role(BaseModel):
     description = Column(String(255))
 
     permissions = relationship("RolePermission", back_populates="role")
+    users = relationship("User", back_populates="role")
+    
+

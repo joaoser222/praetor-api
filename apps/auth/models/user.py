@@ -17,3 +17,4 @@ class User(BaseModel):
     role_id = Column(Integer, ForeignKey("auth_roles.id"), nullable=False)
 
     role = relationship("Role", back_populates="users")
+    tokens = relationship("Token", back_populates="user")
